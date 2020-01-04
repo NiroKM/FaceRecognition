@@ -5,6 +5,11 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(to right, rgb(99, 132, 156), rgb(208, 47, 172));
+}
+
+button{
+  cursor: pointer;
 }
 
 code {
