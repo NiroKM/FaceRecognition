@@ -27,24 +27,25 @@ const app = new Clarifai.App({
   apiKey: '5d7adf2b2682472c8feb0dfa9b1b41ee'
  }); 
  
+const initialState={
+    input:'',
+    imageUrl:'',
+    box:{},
+    route:'signin',
+    isSignedIn: false,
+    user:{
+      id:'',
+      name:'',
+      email:'',
+      entries:0,
+      joined:''
+    }
+}
 
 class App extends Component {
   constructor(){
     super();
-    this.state={
-      input:'',
-      imageUrl:'',
-      box:{},
-      route:'signin',
-      isSignedIn: false,
-      user:{
-        id:'',
-        name:'',
-        email:'',
-        entries:0,
-        joined:''
-      }
-    }
+    this.state=initialState;
   }
 
 
@@ -65,10 +66,10 @@ class App extends Component {
 
   calculateFaceLocation = (data) =>{
       const clarifaiFace=data.outputs[0].data.regions[0].region_info.bounding_box
+      console.log(clarifaiFace);
       const image=document.getElementById('inputImage');
       let width=image.width;
       let height=image.height;
-      console.log(clarifaiFace);
       
       return{
         leftCol: clarifaiFace.left_col * width,
@@ -79,7 +80,6 @@ class App extends Component {
   }
 
   displayFaceBox=(box)=>{
-      console.log(box)
       this.setState({box:box})
   }
 
@@ -110,7 +110,7 @@ class App extends Component {
 
   onRouteChange=(route)=>{
     if(route==='signin'){
-      this.setState({isSignedIn:false})
+      this.setState(initialState)
     }else if(route==='home'){
       this.setState({isSignedIn:true})
     }
