@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import Clarifai from 'clarifai';
 import './App.css';
 import Navigation from './components/Navigation/Navigation.js';
 import ImageLinkedForm from './components/ImageLinkedForm/ImageLinkedForm.js';
@@ -22,15 +21,11 @@ const particleOptions={
   }
 }
 
-
-const app = new Clarifai.App({
-  apiKey: '5d7adf2b2682472c8feb0dfa9b1b41ee'
- }); 
  
 const initialState={
     input:'',
     imageUrl:'',
-    box:{},
+    box:[],
     route:'signin',
     isSignedIn: false,
     user:{
@@ -65,30 +60,33 @@ class App extends Component {
   }
 
   calculateFaceLocation = (data) =>{
-      const clarifaiFace=data.outputs[0].data.regions[0].region_info.bounding_box
-      console.log(clarifaiFace);
-      const image=document.getElementById('inputImage');
-      let width=image.width;
-      let height=image.height;
-      
-      return{
-        leftCol: clarifaiFace.left_col * width,
+      const array=data.outputs[0].data.regions;
+      for(let i=0;i<array.length;i++){
+        const clarifaiFace=data.outputs[0].data.regions[i].region_info.bounding_box
+        const image=document.getElementById('inputImage');
+        let width=image.width;
+        let height=image.height;
+
+        const obj={ leftCol: clarifaiFace.left_col * width,
         topRow: clarifaiFace.top_row * height,
         rightCol: width - (clarifaiFace.right_col * width),
         bottomRow: height - (clarifaiFace.bottom_row * height)
-      }
+        }
+        
+        this.state.box.push(obj);
+      }   
   }
-
-  displayFaceBox=(box)=>{
-      this.setState({box:box})
-  }
-
 
   onButtonSubmit= ()=>{
     this.setState({imageUrl:this.state.input});
-    app.models.predict(
-      "a403429f2ddf4b49b307e318f00e528b",
-       this.state.input)
+    fetch('http://localhost:3000/imageurl',{
+            method:'post',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+            input:this.state.input
+            })
+    })
+    .then(response=>response.json())
     .then(response=> {
       if(response){
         fetch('http://localhost:3000/image',{
@@ -103,7 +101,9 @@ class App extends Component {
           this.setState(Object.assign(this.state.user,{entries:count}))
         })
       }
-      this.displayFaceBox(this.calculateFaceLocation(response))
+      this.setState({box:[]})
+      this.calculateFaceLocation(response)
+      console.log(this.state.box);
     })
     .catch(err=>console.log(err));
   }
@@ -126,7 +126,7 @@ class App extends Component {
         { route==='home' 
           ?<div>
             <Logo/>
-            <Rank name={this.state.user.name} entries={this.state.user.entries}/>
+            <Rank length={this.state.box.length} name={this.state.user.name} entries={this.state.user.entries}/>
             <ImageLinkedForm  
               onInputChange={this.onInputChange}
               onButtonSubmit={this.onButtonSubmit}
