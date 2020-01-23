@@ -88,7 +88,9 @@ class App extends Component {
     })
     .then(response=>response.json())
     .then(response=> {
-      if(response){
+      if(response==="Unable to response to API"){
+        console.log("No content");
+      }else{
         fetch('https://safe-everglades-74165.herokuapp.com/image',{
                 method:'put',
                 headers:{'Content-Type':'application/json'},
